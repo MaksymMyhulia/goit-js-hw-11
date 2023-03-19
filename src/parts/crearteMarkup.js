@@ -9,7 +9,7 @@ return photos.map(({
     downloads,
 }) => {
     return `
-    <a "href="${largeImageURL}" class = "card-link" >
+    <a href="${largeImageURL}" class="card-link" >
     <div class="photo-card">
     <img class= "photo" src="${webformatURL}" alt="${tags}" loading="lazy" />
     <div class="info">

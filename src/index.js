@@ -40,7 +40,7 @@ const loadMore = async function(entries, observer) {
                     observer.observe(lastItem);
                 } else {
                     Notify.info(
-                        "Sorry, there are no images matching your search query. Please try again."
+                        "Sorry, but you reached the end."
                     )
                 }
             
@@ -69,10 +69,16 @@ const onSubmitClick = async (e) => {
     const search_query = searchQuery.value.trim().toLowerCase();
     pix.query = search_query;
     
+    clearPage();
     
     try {
         const { hits, total } = await pix.getPhotos();
-        console.log(hits)
+        
+        if(hits.length === 0) {
+            Notify.failure(`Sorry, there are no images matching your ${search_query}. Please try again.`)
+            return;
+        }
+
         const markup = createMarkup(hits);
         refs.gallery.insertAdjacentHTML("beforeend", markup);
         pix.setTotal(total);
