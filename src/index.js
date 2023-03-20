@@ -16,17 +16,17 @@ refs.btnLoadMore.style.visibility = "hidden";
 
 const pix = new Pixabay();
 
-const options = {
-    root: null,
-    rootMargin: "100px",
-    threshold: 1.0,
-}
+//const options = {
+ //   root: null,
+  //  rootMargin: "100px",
+ //   threshold: 1.0,
+//}
 
 
 const loadMore = async function(entries, observer) {
     entries.forEach(async entry => {
         if(entry.isIntersection) {
-            observer.unobserve(entry.target)
+            //observer.unobserve(entry.target)
             pix.incrementPage();
 
 
@@ -37,7 +37,7 @@ const loadMore = async function(entries, observer) {
                 
                 if (pix.hasMorePhotos){
                     const lastItem = document.querySelector(".gallery a:last-child");
-                    observer.observe(lastItem);
+                    //observer.observe(lastItem);
                 } else {
                     Notify.info(
                         "Sorry, but you reached the end."
@@ -45,6 +45,7 @@ const loadMore = async function(entries, observer) {
                 }
             
                 modalLightBox.refresh();
+                scroll();
             
             } catch (error){
             Notify.failure(error.message, "Sorry, ERROR!");
@@ -57,7 +58,7 @@ const loadMore = async function(entries, observer) {
 
 
 
-const observer = new IntersectionObserver(loadMore, options);
+//const observer = new IntersectionObserver(loadMore, options);
 
 const onSubmitClick = async (e) => {
     e.preventDefault();
@@ -65,14 +66,21 @@ const onSubmitClick = async (e) => {
     const { 
         elements: { searchQuery },
     } = e.target;
-
+    
     const search_query = searchQuery.value.trim().toLowerCase();
+    
+    if(!search_query) {
+        clearPage();
+        Notify.info("Please, enter data to search");
+        return;
+    }
+
     pix.query = search_query;
     
     clearPage();
     
     try {
-        const { hits, total } = await pix.getPhotos();
+        const { hits, totalHits, total } = await pix.getPhotos();
         
         if(hits.length === 0) {
             Notify.failure(`Sorry, there are no images matching your ${search_query}. Please try again.`)
@@ -82,11 +90,11 @@ const onSubmitClick = async (e) => {
         const markup = createMarkup(hits);
         refs.gallery.insertAdjacentHTML("beforeend", markup);
         pix.setTotal(total);
-        Notify.success(`Hooray! We found ${total} images.`);
+        Notify.success(`Hooray! We found ${totalHits} images.`);
 
         if (pix.hasMorePhotos()) {
-            const lastItem = document.querySelector(".gallery a:last-child");
-            observer.observe(lastItem);
+           // const lastItem = document.querySelector(".gallery a:last-child");
+           // observer.observe(lastItem);
             refs.btnLoadMore.style.visibility = "visible";
         }
 
@@ -103,10 +111,11 @@ refs.form.addEventListener("submit", onSubmitClick);
 const onLoadMore = async () => {
     pix.incrementPage();
 
-    if(!pix.hasMorePhotos) {
+    if(!pix.hasMorePhotos()) {
         refs.btnLoadMore.style.visibility = "hidden";
+        Notify.info("We're sorry, but you've reached the end of search results.")
     }
-
+console.log(pix.hasMorePhotos())
     try {
       const { hits } = await pix.getPhotos();
       const markup = createMarkup(hits);
@@ -128,6 +137,16 @@ function clearPage() {
     refs.btnLoadMore.style.visibility = "hidden"
 };
 
+function scroll() {
+ const { height: cardHeight } = document
+  .querySelector(".gallary-container")
+  .firstElementChild.getBoundingClientRect();
+
+window.scrollBy({
+  top: cardHeight * 2,
+  behavior: "smooth",
+});
+}
 
 
 
